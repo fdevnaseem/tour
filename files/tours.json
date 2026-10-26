@@ -1,0 +1,507 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "currency": "BDT",
+    "pricesLastReviewed": "2026-10",
+    "costModel": "total = people * (transportRoundTrip + days * (food + localTransport) + activities) + ceil(people / roomCapacity) * stayRoomPerNight * nights, where nights = days - 1. Pick the tier (budget, standard, comfort) per tour and compare with the user's budget.",
+    "note": "All prices are estimates in BDT and must be verified before launch. Months are numbers 1-12."
+  },
+  "tours": [
+    {
+      "id": "coxs-bazar",
+      "name": "Cox's Bazar Sea Beach Trip",
+      "region": "Cox's Bazar",
+      "division": "Chattogram",
+      "summary": "The longest natural sea beach, plus Inani, Himchari and the Marine Drive road.",
+      "tags": ["beach", "sea", "family", "friends", "easy"],
+      "suitableFor": ["family", "friends", "couple", "solo"],
+      "groupSize": { "min": 1, "max": 20 },
+      "duration": { "minDays": 2, "idealDays": 3, "maxDays": 5 },
+      "season": {
+        "bestMonths": [11, 12, 1, 2, 3],
+        "okMonths": [4, 10],
+        "avoidMonths": [5, 6, 7, 8, 9],
+        "note": "Monsoon brings rough sea, red flag days and heavy rain."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 10,
+          "modes": { "budget": "Non-AC bus", "standard": "AC bus", "comfort": "Flight" },
+          "transportRoundTripPerPerson": { "budget": 2400, "standard": 3800, "comfort": 11000 },
+          "startJourney": {
+            "from": "Sayedabad, Fakirapul or Kallyanpur bus counters (airport for flight)",
+            "departureTime": "21:30 to 22:30 night bus, arrive around 7:00 AM",
+            "notes": "Book night bus at least 2 days ahead in winter. Flights take about 1 hour."
+          }
+        },
+        "Chattogram": {
+          "travelHours": 4,
+          "modes": { "budget": "Non-AC bus", "standard": "AC bus", "comfort": "Premium AC bus" },
+          "transportRoundTripPerPerson": { "budget": 900, "standard": 1500, "comfort": 2400 },
+          "startJourney": {
+            "from": "Chattogram bus terminal (Dhaka-Chattogram highway counters)",
+            "departureTime": "07:00 AM, arrive around 11:30 AM",
+            "notes": "Start early to get a full first day."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 2, "stayRoomPerNight": 1500, "foodPerDay": 700, "localTransportPerDay": 300, "activitiesTotal": 1000 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 4500, "foodPerDay": 1300, "localTransportPerDay": 500, "activitiesTotal": 2500 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 10000, "foodPerDay": 2500, "localTransportPerDay": 1200, "activitiesTotal": 5000 }
+      },
+      "stay": {
+        "area": "Kolatoli or Laboni beach area (Hotel-Motel Zone near Kolatoli for comfort)",
+        "options": [
+          { "tier": "budget", "type": "Small hotels and guest houses near Laboni" },
+          { "tier": "standard", "type": "3 star hotels along the Kolatoli road" },
+          { "tier": "comfort", "type": "Sea-facing 4 or 5 star hotels in the Hotel-Motel Zone" }
+        ],
+        "bookingTip": "Weekends and winter holidays fill up fast. Book 1 to 2 weeks ahead."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Arrival and main beach",
+          "activities": ["Check in and rest", "Laboni beach in the afternoon", "Sunset at Kolatoli", "Walk the Burmese Market"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Local rice and fish meal near Laboni" },
+            { "type": "dinner", "suggestion": "Seafood at a beach-side restaurant, try grilled fish or crab" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Marine Drive day trip",
+          "activities": ["Start at 7:00 AM by jeep or CNG", "Himchari waterfall and viewpoint", "Inani beach", "Return before dark"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Paratha and egg at a local stall" },
+            { "type": "lunch", "suggestion": "Seafood or biryani near Inani" },
+            { "type": "dinner", "suggestion": "Any busy restaurant near Kolatoli" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Morning beach and return",
+          "activities": ["Sunrise on the beach", "Buy dry fish and shutki if you like", "Check out and return"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Hotel breakfast or tea and snacks on the beach" }
+          ]
+        }
+      ],
+      "tips": ["Swim only between the lifeguard flags.", "Bargain for jeep and CNG before getting in.", "Carry cash. Cards are not accepted at small shops."],
+      "warnings": ["Do not swim when a red flag is up.", "Beach vendors may quote high prices to tourists."]
+    },
+    {
+      "id": "sajek-valley",
+      "name": "Sajek Valley Clouds and Hills",
+      "region": "Rangamati",
+      "division": "Chattogram",
+      "summary": "Hilltop views above the clouds, tribal villages and cool mornings.",
+      "tags": ["hills", "clouds", "nature", "friends", "photography"],
+      "suitableFor": ["friends", "couple", "solo", "family"],
+      "groupSize": { "min": 2, "max": 15 },
+      "duration": { "minDays": 2, "idealDays": 3, "maxDays": 4 },
+      "season": {
+        "bestMonths": [10, 11, 12, 1, 2],
+        "okMonths": [3, 7, 8, 9],
+        "avoidMonths": [4, 5, 6],
+        "note": "July to September has the best clouds but landslides and slippery roads are possible. Summer is hot."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 9,
+          "modes": { "budget": "Non-AC bus to Khagrachhari", "standard": "AC bus to Khagrachhari", "comfort": "Private car" },
+          "transportRoundTripPerPerson": { "budget": 2000, "standard": 3000, "comfort": 6500 },
+          "startJourney": {
+            "from": "Sayedabad or Fakirapul counters (Khagrachhari buses)",
+            "departureTime": "22:00 night bus, reach Khagrachhari around 6:30 AM",
+            "notes": "From Khagrachhari take a CNG to Dighinala, then the army-escorted Chander Gari (jeep) to Sajek."
+          }
+        },
+        "Chattogram": {
+          "travelHours": 4,
+          "modes": { "budget": "Bus to Khagrachhari", "standard": "AC bus or microbus", "comfort": "Private car" },
+          "transportRoundTripPerPerson": { "budget": 700, "standard": 1200, "comfort": 3000 },
+          "startJourney": {
+            "from": "Chattogram bus terminal toward Khagrachhari",
+            "departureTime": "06:30 AM",
+            "notes": "Reach Dighinala by late morning to catch the midday jeep convoy."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 2, "stayRoomPerNight": 1500, "foodPerDay": 600, "localTransportPerDay": 800, "activitiesTotal": 500 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 4000, "foodPerDay": 1000, "localTransportPerDay": 1200, "activitiesTotal": 1500 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 8000, "foodPerDay": 1800, "localTransportPerDay": 2000, "activitiesTotal": 3000 }
+      },
+      "stay": {
+        "area": "Sajek Valley hilltop (Ruilui Para and Konglak Para side)",
+        "options": [
+          { "tier": "budget", "type": "Tin-shed and bamboo rooms, small cottages" },
+          { "tier": "standard", "type": "Private cottages with attached bath" },
+          { "tier": "comfort", "type": "Resort cottages with valley view" }
+        ],
+        "bookingTip": "Book the cottage in advance by phone. Weekends are crowded."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Journey to Sajek",
+          "activities": ["Reach Khagrachhari or Dighinala in the morning", "Join the Chander Gari convoy", "Check in and watch the sunset from the hilltop"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Parota and tea in Khagrachhari" },
+            { "type": "dinner", "suggestion": "Bamboo chicken or local meal at the cottage" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Sunrise and villages",
+          "activities": ["Sunrise above the clouds at 5:30 AM", "Konglak Para and tribal villages", "Helipad viewpoint", "Evening bonfire if allowed"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Bamboo chicken, rice and local vegetables" },
+            { "type": "dinner", "suggestion": "Simple meal at the cottage" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Return",
+          "activities": ["Morning view", "Chander Gari back to Dighinala", "Bus home"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Cottage breakfast" }
+          ]
+        }
+      ],
+      "tips": ["Carry a jacket, nights are cold in winter.", "Charge power banks. Electricity is limited.", "Carry cash. There are no ATMs near the top."],
+      "warnings": ["Check the current security and tourist entry situation in the hill districts before you go.", "Chander Gari run in army-escorted convoys at fixed times. Missing the time means waiting a day."]
+    },
+    {
+      "id": "sylhet-classic",
+      "name": "Sylhet Waterfalls, Tea and Swamp Forest",
+      "region": "Sylhet",
+      "division": "Sylhet",
+      "summary": "Jaflong, Bholaganj, Ratargul swamp forest and tea gardens in a short trip.",
+      "tags": ["nature", "river", "tea", "friends", "family"],
+      "suitableFor": ["family", "friends", "couple", "solo"],
+      "groupSize": { "min": 1, "max": 15 },
+      "duration": { "minDays": 2, "idealDays": 3, "maxDays": 4 },
+      "season": {
+        "bestMonths": [6, 7, 8, 9, 10, 11],
+        "okMonths": [12, 1, 2, 3],
+        "avoidMonths": [4],
+        "note": "Ratargul swamp forest and waterfalls look best when the water is high (June to October). Flash floods are possible in heavy rain, so check the forecast."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 6,
+          "modes": { "budget": "Non-AC bus", "standard": "AC train seat (Parabat or Joyanta Express)", "comfort": "Flight" },
+          "transportRoundTripPerPerson": { "budget": 1300, "standard": 2600, "comfort": 9000 },
+          "startJourney": {
+            "from": "Kamalapur Railway Station or Kallyanpur, Sayedabad bus counters (airport for flight)",
+            "departureTime": "Morning train around 06:20 to 07:00, reach Sylhet in the afternoon, or a night train",
+            "notes": "Train tickets open 10 days ahead on the Bangladesh Railway e-ticket site and sell out quickly."
+          }
+        },
+        "Chattogram": {
+          "travelHours": 9,
+          "modes": { "budget": "Non-AC bus", "standard": "AC bus", "comfort": "Private car" },
+          "transportRoundTripPerPerson": { "budget": 2200, "standard": 3400, "comfort": 9000 },
+          "startJourney": {
+            "from": "Chattogram bus counters toward Sylhet",
+            "departureTime": "21:00 night bus",
+            "notes": "This is a long route. A night bus saves a hotel night."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 2, "stayRoomPerNight": 1500, "foodPerDay": 600, "localTransportPerDay": 800, "activitiesTotal": 600 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 3500, "foodPerDay": 1200, "localTransportPerDay": 1300, "activitiesTotal": 1500 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 8000, "foodPerDay": 2200, "localTransportPerDay": 2500, "activitiesTotal": 3000 }
+      },
+      "stay": {
+        "area": "Sylhet city, near Zindabazar or Amberkhana",
+        "options": [
+          { "tier": "budget", "type": "Small hotels near Zindabazar" },
+          { "tier": "standard", "type": "3 star hotels in the city center" },
+          { "tier": "comfort", "type": "4 or 5 star hotels with a city view" }
+        ],
+        "bookingTip": "Hire a CNG or car for the day trips and agree on the full price before you start."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Arrival and city",
+          "activities": ["Check in", "Hazrat Shahjalal Dargah", "Keane Bridge and Surma river", "Walk through Zindabazar"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Panshi or a local restaurant, try Sylheti shatkora beef" },
+            { "type": "dinner", "suggestion": "Bhuna khichuri or local Sylheti food" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Jaflong, Bholaganj and Tamabil",
+          "activities": ["Start at 7:00 AM", "Jaflong and the Piyain river", "Sada Pathor in Bholaganj", "Tamabil border view", "Return before dark"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Local breakfast with paratha and dal" },
+            { "type": "lunch", "suggestion": "River fish meal near Jaflong" },
+            { "type": "dinner", "suggestion": "Any busy restaurant in the city" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Ratargul or tea garden and return",
+          "activities": ["Ratargul swamp forest by boat (wet season)", "Malnicherra tea garden if the water is low", "Return to Dhaka"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Hotel breakfast" },
+            { "type": "lunch", "suggestion": "Light meal near the bus or train station" }
+          ]
+        }
+      ],
+      "tips": ["Try seven-layer tea in Sylhet or Srimangal.", "Wear a lifejacket on all boat rides.", "Start day trips early to avoid the afternoon crowd."],
+      "warnings": ["Check the water level and weather before Ratargul.", "Stone collection and mining areas near Bholaganj can be unsafe in rain."]
+    },
+    {
+      "id": "saint-martin",
+      "name": "Saint Martin's Island",
+      "region": "Teknaf, Cox's Bazar",
+      "division": "Chattogram",
+      "summary": "Coral island with clear water, coconut trees and the best sunsets in the country.",
+      "tags": ["island", "beach", "sea", "friends", "photography"],
+      "suitableFor": ["friends", "couple", "family", "solo"],
+      "groupSize": { "min": 1, "max": 15 },
+      "duration": { "minDays": 2, "idealDays": 3, "maxDays": 4 },
+      "season": {
+        "bestMonths": [11, 12, 1, 2],
+        "okMonths": [3, 10],
+        "avoidMonths": [4, 5, 6, 7, 8, 9],
+        "note": "Ships mostly run in the winter season only. Rules about overnight stays and visitor numbers change, so check before booking."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 14,
+          "modes": { "budget": "Non-AC bus to Teknaf plus economy ship", "standard": "AC bus to Teknaf plus VIP ship seat", "comfort": "Flight to Cox's Bazar, car to Teknaf, VIP ship" },
+          "transportRoundTripPerPerson": { "budget": 6400, "standard": 8700, "comfort": 17500 },
+          "startJourney": {
+            "from": "Night bus to Teknaf, or Cox's Bazar first then Teknaf",
+            "departureTime": "21:00 night bus to Teknaf, ship leaves Teknaf jetty around 9:00 to 10:00 AM",
+            "notes": "Ship tickets are cheaper and safer when booked in advance. Carry your NID or passport."
+          }
+        },
+        "Chattogram": {
+          "travelHours": 8,
+          "modes": { "budget": "Non-AC bus to Teknaf plus economy ship", "standard": "AC bus plus VIP ship", "comfort": "Private car plus VIP ship" },
+          "transportRoundTripPerPerson": { "budget": 5200, "standard": 6900, "comfort": 9500 },
+          "startJourney": {
+            "from": "Chattogram bus counters toward Teknaf",
+            "departureTime": "22:00 night bus, reach Teknaf early morning",
+            "notes": "Reach Teknaf jetty at least 1 hour before ship departure."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 2, "stayRoomPerNight": 1500, "foodPerDay": 700, "localTransportPerDay": 100, "activitiesTotal": 500 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 4000, "foodPerDay": 1300, "localTransportPerDay": 300, "activitiesTotal": 1500 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 8000, "foodPerDay": 2200, "localTransportPerDay": 600, "activitiesTotal": 3500 }
+      },
+      "stay": {
+        "area": "Island beach side, near Dakkhin Para and Uttar Para",
+        "options": [
+          { "tier": "budget", "type": "Bamboo huts and basic cottages" },
+          { "tier": "standard", "type": "Cottages and small resorts" },
+          { "tier": "comfort", "type": "Best beach-front resorts" }
+        ],
+        "bookingTip": "Rooms are limited. Book the stay before buying the ship ticket."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Journey and arrival",
+          "activities": ["Reach Teknaf", "Board the ship (about 2.5 to 3 hours)", "Check in", "Sunset walk on the beach"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Simple meal at the hotel or ship" },
+            { "type": "dinner", "suggestion": "Fresh fish and rice at a beach restaurant" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Chera Dwip and island walk",
+          "activities": ["Walk around the island coast", "Boat trip to Chera Dwip at low tide", "Coconut and sunset at the south tip"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Egg, roti and tea" },
+            { "type": "lunch", "suggestion": "Fish curry and rice" },
+            { "type": "dinner", "suggestion": "Grilled fish or lobster if available" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Return",
+          "activities": ["Morning beach walk", "Ship back to Teknaf (leaves around 2:00 to 3:00 PM)", "Travel home by night"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Hotel breakfast" }
+          ]
+        }
+      ],
+      "tips": ["Carry water and snacks. Prices on the island are high.", "Take sunscreen and a cap.", "Carry cash. Mobile networks are weak."],
+      "warnings": ["Respect the coral. Do not take shells or coral.", "Do not use loud music or leave plastic waste.", "Check the latest ship and visitor rules before you book."]
+    },
+    {
+      "id": "sundarbans",
+      "name": "Sundarbans Mangrove Forest Cruise",
+      "region": "Khulna and Bagerhat",
+      "division": "Khulna",
+      "summary": "A launch trip into the largest mangrove forest in the world, with a chance to see deer, birds and crocodiles.",
+      "tags": ["forest", "wildlife", "boat", "friends", "adventure"],
+      "suitableFor": ["friends", "family", "couple", "solo"],
+      "groupSize": { "min": 2, "max": 25 },
+      "duration": { "minDays": 3, "idealDays": 3, "maxDays": 4 },
+      "season": {
+        "bestMonths": [11, 12, 1, 2],
+        "okMonths": [3, 4, 5, 9, 10],
+        "avoidMonths": [6, 7, 8],
+        "note": "Winter has calm weather and good wildlife viewing. Monsoon months have storms and restrictions."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 8,
+          "modes": { "budget": "Non-AC bus to Khulna", "standard": "AC bus or train to Khulna", "comfort": "Flight to Jashore plus private car" },
+          "transportRoundTripPerPerson": { "budget": 1800, "standard": 3000, "comfort": 8500 },
+          "startJourney": {
+            "from": "Gabtoli or Sayedabad counters toward Khulna, or Kamalapur for the Sundarban Express",
+            "departureTime": "Night bus around 22:00, reach Khulna around 6:00 AM",
+            "notes": "Most tour operators pick you up from Khulna and start the launch from Mongla or Khulna launch ghat."
+          }
+        },
+        "Khulna": {
+          "travelHours": 1,
+          "modes": { "budget": "Local bus or CNG to Mongla", "standard": "Microbus", "comfort": "Private car" },
+          "transportRoundTripPerPerson": { "budget": 400, "standard": 800, "comfort": 2500 },
+          "startJourney": {
+            "from": "Khulna city, direct to the launch point",
+            "departureTime": "08:00 AM",
+            "notes": "Book the launch through a registered operator who also arranges forest permits."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 4, "stayRoomPerNight": 6000, "foodPerDay": 900, "localTransportPerDay": 200, "activitiesTotal": 2500 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 7000, "foodPerDay": 1500, "localTransportPerDay": 300, "activitiesTotal": 3500 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 14000, "foodPerDay": 2500, "localTransportPerDay": 500, "activitiesTotal": 6000 }
+      },
+      "stay": {
+        "area": "On the launch (cabins), with one night anchored near Karamjal or Hiron Point",
+        "options": [
+          { "tier": "budget", "type": "Shared 4-person cabin on a launch" },
+          { "tier": "standard", "type": "AC 2-person cabin on a launch" },
+          { "tier": "comfort", "type": "Private AC cabin on a premium launch" }
+        ],
+        "bookingTip": "Use a registered operator. Forest entry fees and a forest guard are required."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Start from Khulna and Mongla",
+          "activities": ["Board the launch", "Cruise toward Karamjal", "Crocodile and deer breeding center", "Evening on deck"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Rice and fish on the launch" },
+            { "type": "dinner", "suggestion": "Launch dinner" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Deep forest and Hiron Point",
+          "activities": ["Walk the Kotka or Hiron Point trail with a guide", "Sighting spot for spotted deer and birds", "Kochikhali beach if open", "Night on the launch"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Launch breakfast" },
+            { "type": "lunch", "suggestion": "Fresh fish and rice" },
+            { "type": "dinner", "suggestion": "Launch dinner" }
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Return",
+          "activities": ["Sunrise on the river", "Return cruise", "Back to Khulna by evening"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Launch breakfast" },
+            { "type": "lunch", "suggestion": "Light meal on the launch" }
+          ]
+        }
+      ],
+      "tips": ["Carry mosquito repellent and a hat.", "Carry binoculars and a power bank.", "Do not feed animals or leave waste."],
+      "warnings": ["Forest permits are required and entry may be limited in some months.", "Do not leave the guide or enter the forest alone.", "Network is weak or absent inside the forest."]
+    },
+    {
+      "id": "srimangal",
+      "name": "Srimangal Tea Garden Weekend",
+      "region": "Moulvibazar",
+      "division": "Sylhet",
+      "summary": "A short, easy weekend of tea gardens, Lawachara forest and seven-layer tea.",
+      "tags": ["tea", "forest", "relaxing", "family", "couple"],
+      "suitableFor": ["family", "couple", "friends", "solo"],
+      "groupSize": { "min": 1, "max": 15 },
+      "duration": { "minDays": 2, "idealDays": 2, "maxDays": 3 },
+      "season": {
+        "bestMonths": [11, 12, 1, 2, 3],
+        "okMonths": [4, 5, 10, 6, 7, 8, 9],
+        "avoidMonths": [],
+        "note": "Winter is cool and dry. Monsoon is green but wet, with leeches in the forest."
+      },
+      "origins": {
+        "Dhaka": {
+          "travelHours": 4,
+          "modes": { "budget": "Non-AC train seat", "standard": "AC train seat", "comfort": "Private microbus" },
+          "transportRoundTripPerPerson": { "budget": 800, "standard": 1900, "comfort": 6000 },
+          "startJourney": {
+            "from": "Kamalapur or Airport Railway Station",
+            "departureTime": "Morning train around 06:30, reach Srimangal around 10:30 to 11:00",
+            "notes": "Joyantika, Upaban, Parabat and Kalni Express all stop at Srimangal. Book 10 days ahead."
+          }
+        },
+        "Sylhet": {
+          "travelHours": 2,
+          "modes": { "budget": "Local bus", "standard": "Train or microbus", "comfort": "Private car" },
+          "transportRoundTripPerPerson": { "budget": 400, "standard": 700, "comfort": 1500 },
+          "startJourney": {
+            "from": "Sylhet bus station or railway station",
+            "departureTime": "09:00 AM",
+            "notes": "Frequent buses and trains."
+          }
+        }
+      },
+      "costPerPerson": {
+        "budget": { "roomCapacity": 2, "stayRoomPerNight": 1200, "foodPerDay": 600, "localTransportPerDay": 600, "activitiesTotal": 400 },
+        "standard": { "roomCapacity": 2, "stayRoomPerNight": 3000, "foodPerDay": 1100, "localTransportPerDay": 1000, "activitiesTotal": 1000 },
+        "comfort": { "roomCapacity": 2, "stayRoomPerNight": 6500, "foodPerDay": 2000, "localTransportPerDay": 2000, "activitiesTotal": 2500 }
+      },
+      "stay": {
+        "area": "Srimangal town or tea resort areas near Lawachara",
+        "options": [
+          { "tier": "budget", "type": "Small hotels in Srimangal town" },
+          { "tier": "standard", "type": "Tea garden cottages and mid-range resorts" },
+          { "tier": "comfort", "type": "Premium resort inside a tea garden" }
+        ],
+        "bookingTip": "Book resorts ahead on weekends. The town is small and options fill quickly."
+      },
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Arrival, tea and forest",
+          "activities": ["Check in", "Lawachara National Park walk (look for hoolock gibbon)", "Tea garden walk", "Evening in town"],
+          "meals": [
+            { "type": "lunch", "suggestion": "Local rice and fish meal in town" },
+            { "type": "dinner", "suggestion": "Biryani or local dishes in town" }
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Lakes and return",
+          "activities": ["Seven-layer tea at Nilkantha Tea Cabin", "Madhabpur Lake and nearby gardens", "Baikka Beel wetland (winter birds)", "Return home"],
+          "meals": [
+            { "type": "breakfast", "suggestion": "Paratha, dal and tea" },
+            { "type": "lunch", "suggestion": "Light meal near the station" }
+          ]
+        }
+      ],
+      "tips": ["Walk the forest early in the morning for the best chance of wildlife.", "Hire a local guide at Lawachara.", "Buy tea directly from garden shops."],
+      "warnings": ["Do not litter in tea gardens and forests.", "Leech socks help in monsoon."]
+    }
+  ]
+}
