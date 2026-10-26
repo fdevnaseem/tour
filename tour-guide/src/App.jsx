@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { plan, costFor, seasonOf, tours, TIERS, CITIES, MONTHS } from '../libs/api/planner'
+import { plan, costFor, TIERS, CITIES } from '../libs/api/planner'
 
 const money = (n) => '৳' + Math.round(n).toLocaleString('en-BD')
 const SEASON = { best: 'Best season', ok: 'Fair season', avoid: 'Off season' }
@@ -18,8 +18,44 @@ const scene = (id) => {
   return { '--a': a, '--b': b }
 }
 
+const EMPTY = { people: '', origin: '', date: '', days: '', budget: '' }
+
+const today = () => {
+  const d = new Date()
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 10)
+}
+const fmtDate = (s, add = 0) => {
+  const d = new Date(s + 'T00:00:00')
+  d.setDate(d.getDate() + add)
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function validate(f) {
+  const e = {}
+  if (!(Number(f.people) >= 1)) e.people = 'Enter at least 1 person.'
+  if (!f.origin) e.origin = 'Choose where you leave from.'
+  if (!f.date) e.date = 'Pick your leaving date.'
+  else if (f.date < today()) e.date = 'Pick today or a later date.'
+  if (!(Number(f.days) >= 2)) e.days = 'A trip needs at least 2 days.'
+  if (!(Number(f.budget) >= 1000)) e.budget = 'Enter your total budget in taka.'
+  return e
+}
+
+function Field({ label, error, wide, children }) {
+  return (
+    <label className={`field ${wide ? 'wide' : ''} ${error ? 'bad' : ''}`}>
+      <span>{label}</span>
+      {children}
+      {error && <em role="alert">{error}</em>}
+    </label>
+  )
+}
+
 export default function App() {
-  const [form, setForm] = useState({ people: 4, days: 3, budget: 40000, origin: 'Dhaka', month: new Date().getMonth() + 1 })
+  const [form, setForm] = useState(EMPTY)
+  const [errors, setErrors] = useState({})
+  const [query, setQuery] = useState(null)
   const [view, setView] = useState({ name: 'home' })
 
   useEffect(() => {
@@ -34,75 +70,76 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
-  const results = useMemo(() => plan(form), [form])
-  const set = (k) => (e) => setForm({ ...form, [k]: k === 'origin' ? e.target.value : Number(e.target.value) || 0 })
+  const results = useMemo(() => (query ? plan(query) : []), [query])
 
-  if (view.name === 'detail') {
-    const r = results.find((x) => x.tour.id === view.id)
-    if (r) return <Detail r={r} form={form} back={() => history.back()} />
+  const set = (k) => (e) => {
+    setForm({ ...form, [k]: e.target.value })
+    if (errors[k]) setErrors({ ...errors, [k]: undefined })
   }
 
-  if (view.name === 'results') {
-    return <Results results={results} form={form} go={go} back={() => history.back()} />
+  const submit = (e) => {
+    e.preventDefault()
+    const err = validate(form)
+    setErrors(err)
+    if (Object.keys(err).length) return
+    setQuery({
+      people: Number(form.people),
+      days: Number(form.days),
+      budget: Number(form.budget),
+      origin: form.origin,
+      date: form.date,
+      month: Number(form.date.slice(5, 7)),
+    })
+    go({ name: 'results' })
+  }
+
+  const name = query ? view.name : 'home'
+
+  if (name === 'detail') {
+    const r = results.find((x) => x.tour.id === view.id)
+    if (r) return <Detail r={r} form={query} back={() => history.back()} />
+  }
+  if (name === 'results') {
+    return <Results results={results} form={query} go={go} back={() => history.back()} />
   }
 
   return (
-    <>
-      <header className="hero">
-        <div className="sun" />
+    <header className="hero">
+      <div className="sun" />
+      <div className="hero-grid">
         <div className="hero-copy">
           <p className="brand">Bhromon Bangla</p>
-          <h1>
-            We are{' '}
-            <input className="fill" style={{ width: '2.2ch' }} type="number" min="1" value={form.people || ''} onChange={set('people')} aria-label="People" />{' '}
-            people leaving from{' '}
-            <select className="fill" value={form.origin} onChange={set('origin')} aria-label="Starting city">
+          <h1>Where in Bangladesh fits your plan?</h1>
+          <p className="hero-sub">Answer five questions. You get matching places, the full cost for your group and how to get there.</p>
+        </div>
+        <form className="planner" onSubmit={submit} noValidate>
+          <Field label="How many people" error={errors.people}>
+            <input type="number" min="1" inputMode="numeric" placeholder="4" value={form.people} onChange={set('people')} aria-invalid={!!errors.people} />
+          </Field>
+          <Field label="How many days" error={errors.days}>
+            <input type="number" min="2" inputMode="numeric" placeholder="3" value={form.days} onChange={set('days')} aria-invalid={!!errors.days} />
+          </Field>
+          <Field label="Leaving from" error={errors.origin}>
+            <select value={form.origin} onChange={set('origin')} aria-invalid={!!errors.origin}>
+              <option value="">Choose a city</option>
               {Object.keys(CITIES).map((c) => <option key={c}>{c}</option>)}
-            </select>{' '}
-            in{' '}
-            <select className="fill" value={form.month} onChange={set('month')} aria-label="Month">
-              {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
             </select>
-            . We have{' '}
-            <input className="fill" style={{ width: '2.2ch' }} type="number" min="1" value={form.days || ''} onChange={set('days')} aria-label="Days" />{' '}
-            days and{' '}
-            <input className="fill" style={{ width: '6.2ch' }} type="number" min="0" step="1000" value={form.budget || ''} onChange={set('budget')} aria-label="Total budget in taka" />{' '}
-            taka in total.
-          </h1>
-          <div className="hero-foot">
-            <button className="go" onClick={() => go({ name: 'results' })}>Show my trips</button>
-            <p>Every trip comes with the route, the stay, the food and the full cost for your group.</p>
-          </div>
-        </div>
-        <svg className="land" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 200C180 120 300 170 480 130S820 90 1000 150 1300 120 1440 160V320H0Z" fill="#1b6670" />
-          <path d="M0 240C200 190 380 250 600 210S1000 180 1200 230 1380 220 1440 240V320H0Z" fill="#0f4a4f" />
-          <path d="M0 285C240 258 480 300 720 280S1200 262 1440 288V320H0Z" fill="#e9f0ea" />
-        </svg>
-      </header>
-
-      <main className="band">
-        <h2>When each place is at its best</h2>
-        <p className="lede">Pick a trip to see the plan for your group. The highlighted column is the month you chose.</p>
-        <div className="calendar" role="table">
-          {tours.map((t) => (
-            <button key={t.id} className="cal-row" onClick={() => go({ name: 'detail', id: t.id })} disabled={!results.find((r) => r.tour.id === t.id)} style={scene(t.id)}>
-              <span className="cal-name">{t.region}</span>
-              {MONTHS.map((m, i) => (
-                <span key={m} className={`cell ${seasonOf(t, i + 1)} ${i + 1 === form.month ? 'now' : ''}`} title={`${m}: ${SEASON[seasonOf(t, i + 1)]}`}>
-                  {m.slice(0, 3)}
-                </span>
-              ))}
-            </button>
-          ))}
-        </div>
-        <ul className="legend">
-          <li><i className="cell best" />Best</li>
-          <li><i className="cell ok" />Fair</li>
-          <li><i className="cell avoid" />Avoid</li>
-        </ul>
-      </main>
-    </>
+          </Field>
+          <Field label="Leaving on" error={errors.date}>
+            <input type="date" min={today()} value={form.date} onChange={set('date')} aria-invalid={!!errors.date} />
+          </Field>
+          <Field label="Total budget for the group, in taka" error={errors.budget} wide>
+            <input type="number" min="1000" step="500" inputMode="numeric" placeholder="40000" value={form.budget} onChange={set('budget')} aria-invalid={!!errors.budget} />
+          </Field>
+          <button className="go" type="submit">Find my trips</button>
+        </form>
+      </div>
+      <svg className="land" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 200C180 120 300 170 480 130S820 90 1000 150 1300 120 1440 160V320H0Z" fill="#1b6670" />
+        <path d="M0 240C200 190 380 250 600 210S1000 180 1200 230 1380 220 1440 240V320H0Z" fill="#0f4a4f" />
+        <path d="M0 285C240 258 480 300 720 280S1200 262 1440 288V320H0Z" fill="#e9f0ea" />
+      </svg>
+    </header>
   )
 }
 
@@ -111,10 +148,10 @@ function Results({ results, form, go, back }) {
   const over = results.filter((r) => !r.affordable)
   return (
     <div className="page">
-      <nav className="bar"><button className="link" onClick={back}>Change plan</button></nav>
+      <nav className="bar"><button className="link" onClick={back}>Change my answers</button></nav>
       <header className="page-head">
         <h1>{results.length ? `${results.length} ${results.length === 1 ? 'trip fits' : 'trips fit'} your group` : 'No trips match yet'}</h1>
-        <p>{form.people} people from {form.origin}, {form.days} days in {MONTHS[form.month - 1]}, with {money(form.budget)} in total.</p>
+        <p>{form.people} {form.people === 1 ? 'person' : 'people'} from {form.origin}, leaving {fmtDate(form.date)} and back on {fmtDate(form.date, form.days - 1)}, with {money(form.budget)} in total.</p>
       </header>
       {!results.length && <p className="empty">No trip covers {form.people} {form.people === 1 ? 'person' : 'people'} for {form.days} {form.days === 1 ? 'day' : 'days'}. Try a group between 2 and 15 and at least 3 days.</p>}
       {fits.length > 0 && <div className="list">{fits.map((r) => <Row key={r.tour.id} r={r} form={form} go={go} />)}</div>}
