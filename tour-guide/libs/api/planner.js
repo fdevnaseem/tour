@@ -1,65 +1,70 @@
 import data from './data/tours.json'
 
 export const TIERS = ['budget', 'standard', 'comfort']
-export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-// Estimated round trip cost to Dhaka per tier, used when a tour has no fare for the city.
-const toDhaka = {
-  Dhaka: [0, 0, 0],
-  Chattogram: [1000, 1800, 6000],
-  Sylhet: [1300, 2600, 7000],
-  Khulna: [1800, 3000, 8500],
-  Rajshahi: [1400, 2400, 4500],
-  Rangpur: [2000, 3200, 6000],
-  Barishal: [1100, 2000, 4000],
+// Estimated round trip cost per person to reach Dhaka, used when a tour has no direct route from the city.
+export const CITIES = {
+  Dhaka: 0,
+  Chattogram: 1500,
+  Khulna: 1100,
+  Sylhet: 1300,
+  Rajshahi: 1200,
+  Rangpur: 1500,
+  Barishal: 900,
+  Mymensingh: 600,
+  Cumilla: 500,
 }
-export const CITIES = Object.keys(toDhaka)
-const local = { 'sylhet-classic': { Sylhet: [300, 600, 1500] } }
 
 export const tours = data.tours
-export const getTour = (id) => tours.find((t) => t.id === id)
-export const money = (n) => 'BDT ' + Math.round(n).toLocaleString('en-IN')
 
-function fare(t, city, i) {
-  const o = t.origins[city]
-  if (o) return { v: o.transportRoundTripPerPerson[TIERS[i]], est: false, info: o }
-  const l = local[t.id]?.[city]
-  if (l) return { v: l[i], est: false, info: null }
-  const d = t.origins.Dhaka
-  return { v: d.transportRoundTripPerPerson[TIERS[i]] + toDhaka[city][i], est: true, info: d }
-}
-
-export function cost(t, p, i, days) {
-  const c = t.costPerPerson[TIERS[i]]
-  const f = fare(t, p.city, i)
+export function costFor(tour, tier, origin, people, days) {
+  const t = tour.costPerPerson[tier]
+  const direct = tour.origins[origin]
+  const route = direct || tour.origins.Dhaka
+  const extra = direct ? 0 : CITIES[origin] || 0
   const nights = days - 1
-  const rooms = Math.ceil(p.people / c.roomCapacity)
+  const rooms = Math.ceil(people / t.roomCapacity)
   const parts = {
-    Transport: f.v * p.people,
-    Stay: rooms * c.stayRoomPerNight * nights,
-    Food: c.foodPerDay * days * p.people,
-    'Local travel': c.localTransportPerDay * days * p.people,
-    Activities: c.activitiesTotal * p.people,
+    travel: people * (route.transportRoundTripPerPerson[tier] + extra),
+    stay: rooms * t.stayRoomPerNight * nights,
+    food: people * days * t.foodPerDay,
+    local: people * days * t.localTransportPerDay,
+    activities: people * t.activitiesTotal,
   }
   const total = Object.values(parts).reduce((a, b) => a + b, 0)
-  return { tier: TIERS[i], parts, total, perPerson: total / p.people, rooms, nights, est: f.est, info: f.info }
+  return { tier, parts, total, rooms, nights, route, viaDhaka: !direct, extra }
 }
 
-export function plan(p) {
-  const out = []
-  for (const t of tours) {
-    if (p.people < t.groupSize.min || p.people > t.groupSize.max) continue
-    const days = Math.min(Math.max(p.days, t.duration.minDays), t.duration.maxDays)
-    const s = t.season
-    const season = s.bestMonths.includes(p.month) ? 'best' : s.avoidMonths.includes(p.month) ? 'avoid' : 'ok'
-    const tiers = [0, 1, 2].map((i) => cost(t, p, i, days))
-    const fitting = tiers.filter((x) => x.total <= p.budget)
-    const pick = fitting.length ? fitting[fitting.length - 1] : tiers[0]
-    const status = fitting.length ? 'fits' : tiers[0].total <= p.budget * 1.25 ? 'stretch' : 'over'
-    if (status === 'over') continue
-    out.push({ tour: t, days, season, tiers, pick, status })
-  }
-  const rank = (x) => (x.status === 'fits' ? 0 : 2) + (x.season === 'avoid' ? 1 : 0)
-  const sr = { best: 0, ok: 1, avoid: 2 }
-  return out.sort((a, b) => rank(a) - rank(b) || sr[a.season] - sr[b.season] || b.pick.total - a.pick.total)
+export function seasonOf(tour, month) {
+  if (tour.season.bestMonths.includes(month)) return 'best'
+  if (tour.season.avoidMonths.includes(month)) return 'avoid'
+  return 'ok'
+}
+
+export function plan({ people, days, budget, origin, month }) {
+  const p = Math.max(1, Math.floor(people) || 1)
+  const dd = Math.max(1, Math.floor(days) || 1)
+
+  return tours
+    .map((tour) => {
+      const { min, max } = tour.groupSize
+      const { minDays, idealDays, maxDays } = tour.duration
+      if (p < min || p > max || dd < minDays) return null
+
+      const usedDays = Math.min(dd, maxDays)
+      const season = seasonOf(tour, month)
+      const costs = TIERS.map((tier) => costFor(tour, tier, origin, p, usedDays))
+      const affordable = [...costs].reverse().find((c) => c.total <= budget)
+      const chosen = affordable || costs[0]
+      const over = chosen.total - budget
+
+      let score = affordable ? 100 + TIERS.indexOf(chosen.tier) * 4 : Math.max(0, 60 - (over / budget) * 100)
+      score += { best: 30, ok: 8, avoid: -45 }[season]
+      score -= Math.abs(usedDays - idealDays) * 3
+
+      return { tour, season, costs, chosen, affordable: !!affordable, over, usedDays, score }
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
 }

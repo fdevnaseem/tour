@@ -1,282 +1,257 @@
-import { useEffect, useState } from 'react'
-import { CITIES, MONTHS, TIERS, cost, getTour, money, plan, tours } from '../libs/api/planner'
+import { useEffect, useMemo, useState } from 'react'
+import './App.css'
+import { plan, costFor, seasonOf, tours, TIERS, CITIES, MONTHS } from '../libs/api/planner'
 
-const DEFAULT = { city: 'Dhaka', people: 4, days: 3, month: new Date().getMonth() + 1, budget: 40000 }
-
-const PALETTE = {
-  'coxs-bazar': ['#eaf3f6', '#f3d9a4', '#bcd9e0', '#7fb3c2', '#3f8199', 'wave'],
-  'sajek-valley': ['#eef1f4', '#f6e6c8', '#d5dde3', '#a9bcc6', '#6f8b99', 'peak'],
-  'sylhet-classic': ['#eef4ee', '#f4e8c0', '#cfe0cf', '#97bf9a', '#4e8a5a', 'hill'],
-  'saint-martin': ['#e9f6f4', '#f7dfb0', '#b8e3dc', '#6fc2b6', '#2f9a8c', 'wave'],
-  sundarbans: ['#eef2ee', '#e9e2bd', '#b9cdb9', '#6f9272', '#2f5a3c', 'tree'],
-  srimangal: ['#f1f5ea', '#f2e7b8', '#d3e2b8', '#a2c46b', '#5e8f2f', 'hill'],
+const money = (n) => '৳' + Math.round(n).toLocaleString('en-BD')
+const SEASON = { best: 'Best season', ok: 'Fair season', avoid: 'Off season' }
+const TIER_NAME = { budget: 'Budget', standard: 'Standard', comfort: 'Comfort' }
+const SCENE = {
+  'coxs-bazar': ['#0b5d73', '#e9c88d'],
+  'sajek-valley': ['#1f6b4a', '#b9d6c2'],
+  'sylhet-classic': ['#2c6b3d', '#c7da8c'],
+  'saint-martin': ['#0a7a8c', '#7fdcd0'],
+  sundarbans: ['#0c3b2e', '#4f8a5b'],
+  srimangal: ['#4a6b21', '#d6dd96'],
+}
+const scene = (id) => {
+  const [a, b] = SCENE[id] || ['#0b3b3c', '#9cc']
+  return { '--a': a, '--b': b }
 }
 
-function ridge(kind, seed, base, amp) {
-  let d = `M0 500 L0 ${base}`
-  for (let x = 0; x <= 400; x += 8) {
-    const s = Math.sin(x / 40 + seed) + Math.sin(x / 17 + seed * 2) * 0.5
-    const y = kind === 'wave' ? base + Math.sin(x / 28 + seed) * amp * 0.5
-      : kind === 'peak' ? base - Math.abs(s) * amp
-      : kind === 'tree' ? base - Math.abs(Math.sin(x / 9 + seed)) * amp * 0.7 - Math.abs(s) * amp * 0.3
-      : base - (s + 1.5) * amp * 0.4
-    d += ` L${x} ${y.toFixed(1)}`
-  }
-  return d + ' L400 500 Z'
-}
+export default function App() {
+  const [form, setForm] = useState({ people: 4, days: 3, budget: 40000, origin: 'Dhaka', month: new Date().getMonth() + 1 })
+  const [view, setView] = useState({ name: 'home' })
 
-function Scene({ id, tilt = true, className = '' }) {
-  const [sky, sun, c1, c2, c3, kind] = PALETTE[id]
-  const [r, setR] = useState([0, 0])
-  const move = (e) => {
-    if (!tilt) return
-    const b = e.currentTarget.getBoundingClientRect()
-    setR([((e.clientY - b.top) / b.height - 0.5) * -10, ((e.clientX - b.left) / b.width - 0.5) * 14])
-  }
-  const layers = [[c1, 260, 60, 1, -40], [c2, 340, 55, 2, 20], [c3, 420, 45, 3, 80]]
-  return (
-    <div className={'scene ' + className} onMouseMove={move} onMouseLeave={() => setR([0, 0])}>
-      <div className="stack" style={{ transform: `rotateX(${r[0]}deg) rotateY(${r[1]}deg)`, background: sky }}>
-        <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" className="layer" style={{ transform: 'translateZ(-60px) scale(1.2)' }}>
-          <circle cx="290" cy="150" r="42" fill={sun} />
-        </svg>
-        {layers.map(([c, base, amp, seed, z], i) => (
-          <svg key={i} viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" className="layer" style={{ transform: `translateZ(${z}px) scale(${1 - z / 1200})` }}>
-            <path d={ridge(kind, seed, base, amp)} fill={c} />
-          </svg>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const Btn = ({ children, silver, ...p }) => <button className={'btn ' + (silver ? 'silver' : 'gold')} {...p}>{children}</button>
-
-function useRoute() {
-  const [h, setH] = useState(location.hash || '#/')
   useEffect(() => {
-    const f = () => { setH(location.hash || '#/'); window.scrollTo(0, 0) }
-    addEventListener('hashchange', f)
-    return () => removeEventListener('hashchange', f)
+    const onPop = (e) => setView(e.state || { name: 'home' })
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
   }, [])
-  return h.slice(1).split('/').filter(Boolean)
-}
-const go = (p) => { location.hash = p }
 
-function Home() {
-  const [i, setI] = useState(0)
-  useEffect(() => { const t = setInterval(() => setI((n) => (n + 1) % tours.length), 4500); return () => clearInterval(t) }, [])
-  const t = tours[i]
+  const go = (v) => {
+    history.pushState(v, '')
+    setView(v)
+    window.scrollTo(0, 0)
+  }
+
+  const results = useMemo(() => plan(form), [form])
+  const set = (k) => (e) => setForm({ ...form, [k]: k === 'origin' ? e.target.value : Number(e.target.value) || 0 })
+
+  if (view.name === 'detail') {
+    const r = results.find((x) => x.tour.id === view.id)
+    if (r) return <Detail r={r} form={form} back={() => history.back()} />
+  }
+
+  if (view.name === 'results') {
+    return <Results results={results} form={form} go={go} back={() => history.back()} />
+  }
+
   return (
     <>
-      <section className="hero">
+      <header className="hero">
+        <div className="sun" />
         <div className="hero-copy">
-          <p className="eyebrow">Bangladesh, planned in a minute</p>
-          <h1>Tell us your budget. We will tell you where to go.</h1>
-          <p className="lead">Pick your city, your days and your month. You get real trips with the start time, the hotel area, the meals and the full cost for your group.</p>
-          <div className="row"><Btn onClick={() => go('/plan')}>Plan my trip</Btn><Btn silver onClick={() => document.getElementById('places').scrollIntoView({ behavior: 'smooth' })}>See destinations</Btn></div>
+          <p className="brand">Bhromon Bangla</p>
+          <h1>
+            We are{' '}
+            <input className="fill" style={{ width: '2.2ch' }} type="number" min="1" value={form.people || ''} onChange={set('people')} aria-label="People" />{' '}
+            people leaving from{' '}
+            <select className="fill" value={form.origin} onChange={set('origin')} aria-label="Starting city">
+              {Object.keys(CITIES).map((c) => <option key={c}>{c}</option>)}
+            </select>{' '}
+            in{' '}
+            <select className="fill" value={form.month} onChange={set('month')} aria-label="Month">
+              {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+            </select>
+            . We have{' '}
+            <input className="fill" style={{ width: '2.2ch' }} type="number" min="1" value={form.days || ''} onChange={set('days')} aria-label="Days" />{' '}
+            days and{' '}
+            <input className="fill" style={{ width: '6.2ch' }} type="number" min="0" step="1000" value={form.budget || ''} onChange={set('budget')} aria-label="Total budget in taka" />{' '}
+            taka in total.
+          </h1>
+          <div className="hero-foot">
+            <button className="go" onClick={() => go({ name: 'results' })}>Show my trips</button>
+            <p>Every trip comes with the route, the stay, the food and the full cost for your group.</p>
+          </div>
         </div>
-        <div className="hero-art">
-          <Scene key={t.id} id={t.id} className="big" />
-          <div className="caption"><span>{String(i + 1).padStart(2, '0')} / 06</span><strong>{t.name}</strong><em>{t.region}</em></div>
-        </div>
-      </section>
+        <svg className="land" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 200C180 120 300 170 480 130S820 90 1000 150 1300 120 1440 160V320H0Z" fill="#1b6670" />
+          <path d="M0 240C200 190 380 250 600 210S1000 180 1200 230 1380 220 1440 240V320H0Z" fill="#0f4a4f" />
+          <path d="M0 285C240 258 480 300 720 280S1200 262 1440 288V320H0Z" fill="#e9f0ea" />
+        </svg>
+      </header>
 
-      <section className="steps">
-        <h2>Three answers, one clear plan</h2>
-        <div className="grid3">
-          {[['01', 'Your trip', 'City, number of people, days, month and total budget.'], ['02', 'Your matches', 'Trips ranked by season and price, with the comfort level your budget allows.'], ['03', 'Your day plan', 'When to leave, where to sleep, what to eat and what each day costs.']].map(([n, h, p]) => (
-            <div key={n}><span className="num">{n}</span><h3>{h}</h3><p>{p}</p></div>
+      <main className="band">
+        <h2>When each place is at its best</h2>
+        <p className="lede">Pick a trip to see the plan for your group. The highlighted column is the month you chose.</p>
+        <div className="calendar" role="table">
+          {tours.map((t) => (
+            <button key={t.id} className="cal-row" onClick={() => go({ name: 'detail', id: t.id })} disabled={!results.find((r) => r.tour.id === t.id)} style={scene(t.id)}>
+              <span className="cal-name">{t.region}</span>
+              {MONTHS.map((m, i) => (
+                <span key={m} className={`cell ${seasonOf(t, i + 1)} ${i + 1 === form.month ? 'now' : ''}`} title={`${m}: ${SEASON[seasonOf(t, i + 1)]}`}>
+                  {m.slice(0, 3)}
+                </span>
+              ))}
+            </button>
           ))}
         </div>
-      </section>
-
-      <section id="places" className="places">
-        <h2>Six places to start with</h2>
-        <div className="cards">
-          {tours.map((x) => (
-            <a key={x.id} className="card" href={`#/tour/${x.id}`}>
-              <Scene id={x.id} tilt={false} />
-              <h3>{x.name}</h3>
-              <p>{x.summary}</p>
-              <span className="meta">{x.duration.idealDays} days · Best {x.season.bestMonths.map((m) => MONTHS[m - 1]).slice(0, 1)} to {MONTHS[x.season.bestMonths.at(-1) - 1]}</span>
-            </a>
-          ))}
-        </div>
-      </section>
-
-      <section className="closing"><h2>Ready when you are</h2><Btn onClick={() => go('/plan')}>Plan my trip</Btn></section>
+        <ul className="legend">
+          <li><i className="cell best" />Best</li>
+          <li><i className="cell ok" />Fair</li>
+          <li><i className="cell avoid" />Avoid</li>
+        </ul>
+      </main>
     </>
   )
 }
 
-function Stepper({ value, set, min, max, step = 1, unit }) {
+function Results({ results, form, go, back }) {
+  const fits = results.filter((r) => r.affordable)
+  const over = results.filter((r) => !r.affordable)
   return (
-    <div className="stepper">
-      <button onClick={() => set(Math.max(min, value - step))} aria-label="less">−</button>
-      <div><span>{value}</span><small>{unit}</small></div>
-      <button onClick={() => set(Math.min(max, value + step))} aria-label="more">+</button>
+    <div className="page">
+      <nav className="bar"><button className="link" onClick={back}>Change plan</button></nav>
+      <header className="page-head">
+        <h1>{results.length ? `${results.length} ${results.length === 1 ? 'trip fits' : 'trips fit'} your group` : 'No trips match yet'}</h1>
+        <p>{form.people} people from {form.origin}, {form.days} days in {MONTHS[form.month - 1]}, with {money(form.budget)} in total.</p>
+      </header>
+      {!results.length && <p className="empty">No trip covers {form.people} {form.people === 1 ? 'person' : 'people'} for {form.days} {form.days === 1 ? 'day' : 'days'}. Try a group between 2 and 15 and at least 3 days.</p>}
+      {fits.length > 0 && <div className="list">{fits.map((r) => <Row key={r.tour.id} r={r} form={form} go={go} />)}</div>}
+      {over.length > 0 && (
+        <>
+          <h2 className="split">Above your budget</h2>
+          <div className="list">{over.map((r) => <Row key={r.tour.id} r={r} form={form} go={go} />)}</div>
+        </>
+      )}
     </div>
   )
 }
 
-function Planner({ plan: p, setPlan }) {
-  const up = (k) => (v) => setPlan({ ...p, [k]: v })
+function Row({ r, form, go }) {
+  const { tour, chosen } = r
+  const pct = Math.min(100, (chosen.total / form.budget) * 100)
   return (
-    <section className="planner">
-      <h1>Plan your trip</h1>
-      <div className="form">
-        <div className="field wide">
-          <label>Starting from</label>
-          <div className="chips">{CITIES.map((c) => <button key={c} className={p.city === c ? 'on' : ''} onClick={() => up('city')(c)}>{c}</button>)}</div>
-        </div>
-        <div className="field"><label>Travellers</label><Stepper value={p.people} set={up('people')} min={1} max={25} unit="people" /></div>
-        <div className="field"><label>Duration</label><Stepper value={p.days} set={up('days')} min={2} max={5} unit={`days, ${p.days - 1} nights`} /></div>
-        <div className="field wide">
-          <label>Month of travel</label>
-          <div className="months">{MONTHS.map((m, i) => <button key={m} className={p.month === i + 1 ? 'on' : ''} onClick={() => up('month')(i + 1)}>{m}</button>)}</div>
-        </div>
-        <div className="field wide">
-          <label>Total budget for the group</label>
-          <div className="budget"><span>{money(p.budget)}</span><small>{money(p.budget / p.people)} per person</small></div>
-          <input type="range" min="5000" max="300000" step="1000" value={p.budget} onChange={(e) => up('budget')(+e.target.value)} />
-        </div>
+    <article className={`trip ${r.affordable ? '' : 'dim'}`}>
+      <div className="trip-art" style={scene(tour.id)}>
+        <span className={`pill ${r.season}`}>{SEASON[r.season]}</span>
+        <h2>{tour.name}</h2>
       </div>
-      <Btn onClick={() => go('/results')}>Show my trips</Btn>
-    </section>
-  )
-}
-
-const seasonText = { best: 'Best time to go', ok: 'Possible this month', avoid: 'Not a good month' }
-
-function Results({ plan: p }) {
-  const list = plan(p)
-  const good = list.filter((x) => x.status === 'fits' && x.season !== 'avoid')
-  const rest = list.filter((x) => !good.includes(x))
-  const Row = ({ x }) => (
-    <a className="row-card" href={`#/tour/${x.tour.id}`}>
-      <Scene id={x.tour.id} tilt={false} />
-      <div>
-        <span className={'tag ' + x.season}>{seasonText[x.season]}</span>
-        <h3>{x.tour.name}</h3>
-        <p>{x.tour.summary}</p>
-        <span className="meta">{x.days} days · {x.pick.tier} level · {x.status === 'stretch' ? 'A little over budget' : 'Within budget'}</span>
-      </div>
-      <div className="price"><span>{money(x.pick.total)}</span><small>{money(x.pick.perPerson)} per person</small></div>
-    </a>
-  )
-  return (
-    <section className="results">
-      <div className="results-head">
-        <h1>{good.length ? `${good.length} trip${good.length > 1 ? 's' : ''} for your plan` : 'No exact match'}</h1>
-        <p>{p.people} people from {p.city}, {MONTHS[p.month - 1]}, {money(p.budget)} total</p>
-        <Btn silver onClick={() => go('/plan')}>Change plan</Btn>
-      </div>
-      {good.map((x) => <Row key={x.tour.id} x={x} />)}
-      {rest.length > 0 && <h2 className="sub">Worth a look</h2>}
-      {rest.map((x) => <Row key={x.tour.id} x={x} />)}
-      {!list.length && <p className="empty">Nothing fits this budget yet. Try more money or fewer days.</p>}
-    </section>
-  )
-}
-
-function Tour({ id, plan: p }) {
-  const t = getTour(id)
-  const [ti, setTi] = useState(1)
-  if (!t) return <section className="planner"><h1>Trip not found</h1></section>
-  const days = Math.min(Math.max(p.days, t.duration.minDays), t.duration.maxDays)
-  const c = cost(t, p, ti, days)
-  const info = c?.info
-  const total = c?.total ?? 0
-  return (
-    <article className="tour">
-      <header className="tour-hero">
-        <div>
-          <a className="back" href="#/results">Back to results</a>
-          <p className="eyebrow">{t.region}, {t.division}</p>
-          <h1>{t.name}</h1>
-          <p className="lead">{t.summary}</p>
-          <div className="months small">{MONTHS.map((m, i) => <span key={m} className={t.season.bestMonths.includes(i + 1) ? 'best' : t.season.avoidMonths.includes(i + 1) ? 'avoid' : ''}>{m}</span>)}</div>
-          <p className="note">{t.season.note}</p>
-        </div>
-        <Scene id={t.id} className="big" />
-      </header>
-
-      <section className="block">
-        <h2>What it costs</h2>
-        <div className="chips">{TIERS.map((x, i) => <button key={x} className={ti === i ? 'on' : ''} onClick={() => setTi(i)}>{x}</button>)}</div>
-        {c ? (
-          <div className="cost">
-            <div className="total"><span>{money(total)}</span><small>{p.people} people, {days} days · {money(c.perPerson)} each</small></div>
-            <div className="bars">
-              {Object.entries(c.parts).map(([k, v]) => (
-                <div key={k}><label>{k}</label><i style={{ width: (v / total) * 100 + '%' }} /><b>{money(v)}</b></div>
-              ))}
-            </div>
-            {c.est && <p className="note">Transport from {p.city} is an estimate through Dhaka.</p>}
-          </div>
-        ) : null}
-      </section>
-
-      {info && (
-        <section className="block two">
-          <h2>How to start</h2>
-          <dl>
-            <dt>Leave from</dt><dd>{info.startJourney.from}</dd>
-            <dt>Time</dt><dd>{info.startJourney.departureTime}</dd>
-            <dt>Travel</dt><dd>About {info.travelHours} hours, {info.modes[TIERS[ti]]}</dd>
-            <dt>Good to know</dt><dd>{info.startJourney.notes}</dd>
-          </dl>
-        </section>
-      )}
-
-      <section className="block two">
-        <h2>Where to stay</h2>
-        <dl>
-          <dt>Area</dt><dd>{t.stay.area}</dd>
-          <dt>Your level</dt><dd>{t.stay.options[ti].type}</dd>
-          <dt>Booking</dt><dd>{t.stay.bookingTip}</dd>
+      <div className="trip-body">
+        <p className="sum">{tour.summary}</p>
+        <dl className="facts">
+          <div><dt>Journey</dt><dd>{chosen.route.travelHours} hours{chosen.viaDhaka ? ' from Dhaka' : ''}</dd></div>
+          <div><dt>Trip length</dt><dd>{r.usedDays} days</dd></div>
+          <div><dt>Style</dt><dd>{TIER_NAME[chosen.tier]}</dd></div>
+          <div><dt>By</dt><dd>{chosen.route.modes[chosen.tier]}</dd></div>
         </dl>
-      </section>
-
-      <section className="block">
-        <h2>Day by day</h2>
-        <div className="days">
-          {t.itinerary.map((d) => (
-            <div key={d.day} className="day">
-              <span className="num">{String(d.day).padStart(2, '0')}</span>
-              <div>
-                <h3>{d.title}</h3>
-                <ul>{d.activities.map((a) => <li key={a}>{a}</li>)}</ul>
-                <p className="eat">{d.meals.map((m) => `${m.type}: ${m.suggestion}`).join('. ')}.</p>
-              </div>
-            </div>
-          ))}
+        <div className="cost">
+          <div>
+            <strong className="big">{money(chosen.total)}</strong>
+            <span>{money(chosen.total / form.people)} per person</span>
+          </div>
+          <div className="meter">
+            <div className="track"><i style={{ width: pct + '%' }} className={r.affordable ? '' : 'hot'} /></div>
+            <span>{r.affordable ? `${money(form.budget - chosen.total)} left` : `${money(r.over)} over`}</span>
+          </div>
+          <button className="go dark" onClick={() => go({ name: 'detail', id: tour.id })}>See the plan</button>
         </div>
-      </section>
-
-      <section className="block two">
-        <h2>Before you go</h2>
-        <ul className="tips">{t.tips.map((x) => <li key={x}>{x}</li>)}{t.warnings.map((x) => <li key={x} className="warn">{x}</li>)}</ul>
-      </section>
+      </div>
     </article>
   )
 }
 
-export default function App() {
-  const [p, setP] = useState(() => { try { return JSON.parse(sessionStorage.getItem('plan')) || DEFAULT } catch { return DEFAULT } })
-  useEffect(() => { try { sessionStorage.setItem('plan', JSON.stringify(p)) } catch {} }, [p])
-  const [a, b] = useRoute()
+function Detail({ r, form, back }) {
+  const { tour } = r
+  const [tier, setTier] = useState(r.chosen.tier)
+  const c = useMemo(() => costFor(tour, tier, form.origin, form.people, r.usedDays), [tour, tier, form, r.usedDays])
+  const stay = tour.stay.options.find((o) => o.tier === tier)
+  const lines = [
+    ['Travel', c.parts.travel],
+    [`Stay, ${c.rooms} ${c.rooms === 1 ? 'room' : 'rooms'} for ${c.nights} ${c.nights === 1 ? 'night' : 'nights'}`, c.parts.stay],
+    ['Food', c.parts.food],
+    ['Local transport', c.parts.local],
+    ['Activities', c.parts.activities],
+  ]
   return (
-    <>
-      <nav className="nav">
-        <a href="#/" className="logo">Bhromon</a>
-        <div><a href="#/">Home</a><Btn onClick={() => go('/plan')}>Plan a trip</Btn></div>
-      </nav>
-      <main>
-        {a === 'plan' ? <Planner plan={p} setPlan={setP} /> : a === 'results' ? <Results plan={p} /> : a === 'tour' ? <Tour id={b} plan={p} /> : <Home />}
-      </main>
-      <footer className="foot">Prices are estimates. Check fares and rooms before you book.</footer>
-    </>
+    <div className="page detail">
+      <header className="d-hero" style={scene(tour.id)}>
+        <nav className="bar"><button className="link light" onClick={back}>Back to trips</button></nav>
+        <span className={`pill ${r.season}`}>{SEASON[r.season]}</span>
+        <h1>{tour.name}</h1>
+        <p>{tour.summary}</p>
+      </header>
+
+      <div className="d-grid">
+        <aside className="d-cost">
+          <h2>Cost for {form.people} {form.people === 1 ? 'person' : 'people'}</h2>
+          <div className="tabs" role="tablist">
+            {TIERS.map((t) => (
+              <button key={t} role="tab" aria-selected={t === tier} className={t === tier ? 'on' : ''} onClick={() => setTier(t)}>{TIER_NAME[t]}</button>
+            ))}
+          </div>
+          <ul className="lines">
+            {lines.map(([k, v]) => <li key={k}><span>{k}</span><b>{money(v)}</b></li>)}
+          </ul>
+          <div className="total"><span>Total</span><strong>{money(c.total)}</strong></div>
+          <p className={c.total <= form.budget ? 'ok-note' : 'hot-note'}>
+            {c.total <= form.budget ? `${money(form.budget - c.total)} under your budget` : `${money(c.total - form.budget)} over your budget`}
+          </p>
+          <p className="fine">Prices are estimates. Check fares and room rates before you book.</p>
+        </aside>
+
+        <div className="d-main">
+          <section>
+            <h2>Getting there</h2>
+            {c.viaDhaka && <p className="notice">There is no direct route listed from {form.origin}. Costs include about {money(c.extra)} per person to reach Dhaka and back, and the plan starts from Dhaka.</p>}
+            <dl className="info">
+              <div><dt>Go by</dt><dd>{c.route.modes[tier]}, about {c.route.travelHours} hours</dd></div>
+              <div><dt>Start from</dt><dd>{c.route.startJourney.from}</dd></div>
+              <div><dt>Leave at</dt><dd>{c.route.startJourney.departureTime}</dd></div>
+              <div><dt>Know this</dt><dd>{c.route.startJourney.notes}</dd></div>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Where to stay</h2>
+            <dl className="info">
+              <div><dt>Area</dt><dd>{tour.stay.area}</dd></div>
+              {stay && <div><dt>{TIER_NAME[tier]}</dt><dd>{stay.type}</dd></div>}
+              <div><dt>Booking</dt><dd>{tour.stay.bookingTip}</dd></div>
+            </dl>
+          </section>
+
+          <section>
+            <h2>Day by day</h2>
+            {r.usedDays !== tour.itinerary.length && <p className="notice">This plan covers {tour.itinerary.length} days. It works best for {tour.duration.minDays} to {tour.duration.maxDays} days.</p>}
+            <ol className="days">
+              {tour.itinerary.map((d) => (
+                <li key={d.day}>
+                  <h3><span>Day {d.day}</span>{d.title}</h3>
+                  <ul>{d.activities.map((a) => <li key={a}>{a}</li>)}</ul>
+                  {d.meals.length > 0 && (
+                    <div className="meals">
+                      {d.meals.map((m) => <p key={m.type}><b>{m.type[0].toUpperCase() + m.type.slice(1)}</b> {m.suggestion}</p>)}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="two">
+            <div>
+              <h2>Good to know</h2>
+              <ul className="plain">{tour.tips.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+            <div>
+              <h2>Be careful</h2>
+              <ul className="plain warn">{tour.warnings.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+          </section>
+          <p className="fine">{tour.season.note}</p>
+        </div>
+      </div>
+    </div>
   )
 }
